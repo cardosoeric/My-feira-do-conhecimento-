@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowUp - Organizador de Tarefas Gamificado</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+ 
+  <style>
+    /* Garantir que o texto das tarefas completadas seja preto no modo claro */
+    .task-completed-text {
+        color: #000000 !important;
+        font-weight: 600;
+    }
+
+    /* No modo escuro, manter o texto branco */
+    .dark .task-completed-text {
+        color: #ffffff !important;
+    }
+
+    /* Estilo para tarefas completadas no modo claro */
+    .task-completed-light {
+        background: linear-gradient(to right, #d1fae5, #a7f3d0) !important;
+    }
+
+    .task-completed-light span {
+        color: #000000 !important;
+        font-weight: 600;
+    }
+
+    /* Estilo para tarefas completadas no modo escuro */
+    .task-completed-dark {
+        background: linear-gradient(to right, #052e16, #166534) !important;
+    }
+
+    .task-completed-dark span {
+        color: #ffffff !important;
+        font-weight: 600;
+    }
+    
+    /* CORREÇÃO: Garantir que o texto das tarefas seja preto no modo claro */
+    .task-card span {
+        color: #000000 !important;
+    }
+
+    .dark .task-card span {
+        color: #ffffff !important;
+    }
+
+    /* CORREÇÃO: Texto dos cabeçalhos das seções */
+    .task-card h2 {
+        color: #000000 !important;
+    }
+
+    .dark .task-card h2 {
+        color: #ffffff !important;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    
+    .task-card {
+      transition: all 0.3s ease;
+      border-left: 4px solid;
+    }
+    
+    .task-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .reward-card {
+      transition: all 0.3s ease;
+    }
+    
+    .reward-card:hover {
+      transform: scale(1.03);
+    }
+    
+    .points-display {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 5px 15px;
+      border-radius: 20px;
+      color: rgb(255, 255, 255);
+      font-weight: 600;
+    }
+    
+    .header-gradient {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      transition: background 0.3s;
+    }
+    
+    .dark .header-gradient {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
+    
+    .notification-badge {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Estilos para o modal de login */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: rgb(255, 255, 255);
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      transition: background 0.3s;
+    }
+    
+    .dark .modal-content {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+    
+    /* Estilos para o dropdown de notificações */
+    .notification-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 320px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
+    
+    .dark .notification-dropdown {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+    
+    .notification-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .dark .notification-item {
+      border-bottom: 1px solid #334155;
+    }
+    
+    .notification-item:hover {
+      background: #f9f9f9;
+    }
+    
+    .dark .notification-item:hover {
+      background: #334155;
+    }
+    
+    .notification-item.unread {
+      background: #f0f7ff;
+    }
+    
+    .dark .notification-item.unread {
+      background: #1e3a5f;
+    }
+    
+    .notification-time {
+      font-size: 0.8rem;
+      color: #888;
+    }
+    
+    .dark .notification-time {
+      color: #94a3b8;
+    }
+    
+    /* Estilos para o modo escuro */
+    .dark {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    
+    .dark .bg-white {
+      background: #1e293b;
+    }
+    
+    .dark .bg-gray-50 {
+      background: #1e293b;
+    }
+    
+    .dark .bg-indigo-50 {
+      background: #1e1b4b;
+    }
+    
+    .dark .bg-blue-50 {
+      background: #172554;
+    }
+    
+    .dark .bg-purple-50 {
+      background: #1e1b4b;
+    }
+    
+    .dark .text-gray-700 {
+      color: #ebebeb;
+    }
+    
+    .dark .text-gray-600 {
+      color: #94a3b8;
+    }
+    
+    .dark .border-gray-100 {
+      border-color: #334155;
+    }
+    
+    .dark .border-gray-200 {
+      border-color: #334155;
+    }
+    
+    .dark .bg-gradient-to-r.from-gray-50 {
+      background: linear-gradient(to right, #1e293b, #1e293b);
+    }
+    
+    .dark .bg-gradient-to-r.from-indigo-50 {
+      background: linear-gradient(to right, #1e293b, #1e1b4b);
+    }
+    
+    .dark .bg-gradient-to-r.from-blue-50 {
+      background: linear-gradient(to right, #1e293b, #172554);
+    }
+    
+    .dark .bg-gradient-to-r.from-purple-50 {
+      background: linear-gradient(to right, #1e293b, #1e1b4b);
+    }
+    
+    .dark .bg-gradient-to-r.from-indigo-50.to-purple-50 {
+      background: linear-gradient(to right, #1e1b4b, #1e1b4b);
+    }
+    
+    .dark .shadow-lg {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .dark .shadow-md {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Botão de alternar tema */
+    .theme-toggle {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: transform 0.3s;
+    }
+    
+    .theme-toggle:hover {
+      transform: rotate(30deg);
+    }
+    
+    .dark .theme-toggle {
+      color: #fbbf24;
+    }
+    
+    /* CORREÇÕES ADICIONADAS */
+    
+    /* Corrigir fundo da seção de recompensas no modo escuro */
+    .dark .bg-gradient-to-r.from-indigo-50.to-purple-50 {
+      background: linear-gradient(to right, #1e1b4b, #1e1b4b);
+    }
+    
+    /* Corrigir cores dos links de navegação no modo escuro */
+    .dark nav a {
+      color: #e2e8f0;
+    }
+    
+    .dark nav a:hover {
+      color: #a5b4fc;
+    }
+    
+    /* Estilos para o modal de personalização de recompensas */
+    .custom-reward-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .custom-reward-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dark .custom-reward-content {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+    
+    /* Estilos para o modal de edição de tarefas */
+    .edit-task-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .edit-task-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dark .edit-task-content {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+    
+   
+    
+    /* Responsividade  */
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .reward-card {
+        margin-bottom: 1rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      .points-display {
+        order: -1;
+        margin-bottom: 0.5rem;
+      }
+      
+      .notification-dropdown {
+        width: 280px;
+        right: -50px;
+      }
+      
+      .task-card li {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+      }
+      
+      .task-card li button {
+        width: 100%;
+      }
+    }
+    
+    @media (max-width: 640px) {
+      .grid-cols-1.sm\\:grid-cols-2.md\\:grid-cols-4 {
+        grid-template-columns: 1fr;
+      }
+      
+      .notification-dropdown {
+        width: 250px;
+        right: -80px;
+      }
+      
+      .modal-content, .custom-reward-content, .edit-task-content {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+    }
+    
+    /* Melhorias de cores para modo escuro */
+    .dark .task-card span {
+      color: #ffffff !important;
+    }
+    
+    .dark .edit-button {
+      color: #cbd5e1 !important;
+    }
+    
+    .dark .edit-button:hover {
+      color: #ffffff !important;
+    }
+    
+    /* Melhorias de acessibilidade */
+    button:focus, input:focus, textarea:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+    
+    /* Melhorias de espaçamento para mobile */
+    .mobile-spacing {
+      padding: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+      .mobile-spacing {
+        padding: 0.75rem;
+      }
+    }
+    
+    /* Estilo para a logo de pizza */
+    .pizza-logo {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .pizza-logo::before {
+      content: "";
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: #fbbf24;
+      border-radius: 50%;
+    }
+    
+    .pizza-logo::after {
+      content: "";
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: #f97316;
+      border-radius: 50%;
+    }
+    
+    .pizza-slice {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 30px solid transparent;
+      border-right: 30px solid transparent;
+      border-bottom: 50px solid #fbbf24;
+      top: -10px;
+      left: 0;
+    }
+    
+    .pizza-pepperoni {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #dc2626;
+      border-radius: 50%;
+    }
+    
+    .pizza-pepperoni:nth-child(1) { top: 15px; left: 15px; }
+    .pizza-pepperoni:nth-child(2) { top: 15px; right: 15px; }
+    .pizza-pepperoni:nth-child(3) { bottom: 15px; left: 15px; }
+    .pizza-pepperoni:nth-child(4) { bottom: 15px; right: 15px; }
+    .pizza-pepperoni:nth-child(5) { top: 30px; left: 30px; }
+    
+    /* ========== MELHORIAS DE RESPONSIVIDADE ========== */
+    
+    /* Ajustes gerais para telas menores */
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .reward-card {
+        margin-bottom: 1rem;
+      }
+    }
+    
+    /* Tablet (768px - 1024px) */
+    @media (max-width: 1024px) and (min-width: 769px) {
+      main {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .task-card:last-child {
+        grid-column: 1 / -1;
+      }
+      
+      .grid-cols-1.sm\\:grid-cols-2.md\\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    /* Mobile (até 768px) */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      .points-display {
+        order: -1;
+        margin-bottom: 0.5rem;
+      }
+      
+      .notification-dropdown {
+        width: 280px;
+        right: -50px;
+      }
+      
+      .task-card li {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+      }
+      
+      .task-card li button {
+        width: 100%;
+      }
+      
+      /* Ajustes para seção de recompensas em mobile */
+      .bg-gradient-to-r.from-indigo-50.to-purple-50 {
+        padding: 1rem 0.75rem;
+      }
+      
+      /* Ajustes de fonte para mobile */
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      h2 {
+        font-size: 1.25rem;
+      }
+      
+      .text-base {
+        font-size: 0.9rem;
+      }
+      
+      .text-lg {
+        font-size: 1rem;
+      }
+      
+      /* Ajustes de espaçamento para mobile */
+      .p-4 {
+        padding: 1rem;
+      }
+      
+      .p-5 {
+        padding: 1.25rem;
+      }
+      
+      .p-6 {
+        padding: 1.5rem;
+      }
+      
+      .mb-4 {
+        margin-bottom: 1rem;
+      }
+      
+      .mb-6 {
+        margin-bottom: 1.5rem;
+      }
+    
+      .desktop-nav {
+        display: none;
+      }
+    }
+    
+    /* Mobile pequeno (até 480px) */
+    @media (max-width: 480px) {
+      .notification-dropdown {
+        width: 250px;
+        right: -80px;
+      }
+      
+      .modal-content, .custom-reward-content, .edit-task-content {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+      
+      .grid-cols-1.sm\\:grid-cols-2.md\\:grid-cols-4 {
+        grid-template-columns: 1fr;
+      }
+      
+      /* Ajustes de botões para mobile pequeno */
+      button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+      
+      .points-display {
+        font-size: 0.9rem;
+        padding: 4px 12px;
+      }
+      
+      /* Ajustes de ícones para mobile pequeno */
+      .text-2xl {
+        font-size: 1.5rem;
+      }
+      
+      .text-xl {
+        font-size: 1.25rem;
+      }
+      
+      /* Ajustes de logo para mobile pequeno */
+      .pizza-logo {
+        width: 50px;
+        height: 50px;
+      }
+      
+      .pizza-logo::before {
+        width: 35px;
+        height: 35px;
+      }
+      
+      .pizza-logo::after {
+        width: 25px;
+        height: 25px;
+      }
+      
+      .pizza-slice {
+        border-left: 25px solid transparent;
+        border-right: 25px solid transparent;
+        border-bottom: 40px solid #fbbf24;
+      }
+    }
+    
+    /* Ajustes para orientação paisagem em mobile */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .modal-content, .custom-reward-content, .edit-task-content {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      
+      header {
+        padding: 0.5rem;
+      }
+      
+      main {
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 text-gray-800 min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="header-gradient shadow-lg p-4 flex flex-col md:flex-row justify-between items-center sticky top-0 z-10 mobile-spacing">
+    <div class="flex items-center space-x-4 mb-4 md:mb-0">
+      <div class="flex items-center">
+        <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-2">
+          <i class='bx bx-check-square text-white'></i>
+        </div>
+        <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FlowUp</h1>
+      </div>
+      <nav class="desktop-nav hidden md:flex space-x-4">
+        <a href="#" class="hover:text-indigo-600 font-medium transition-colors duration-200">Início</a>
+        <a href="calendario.html" class="hover:text-indigo-600 font-medium transition-colors duration-200">Calendário</a>
+      </nav>
+    </div>
+    <div class="flex items-center space-x-4 flex-wrap justify-center">
+      <!-- Botão de alternar tema -->
+      <button id="themeToggle" class="theme-toggle text-gray-700">
+        <i class='bx bx-moon' id="themeIcon"></i>
+      </button>
+      
+      <div class="points-display flex items-center mb-2 md:mb-0">
+        <i class='bx bx-coin-stack mr-1'></i>
+        <span>Pontos: <span id="points">0</span></span>
+      </div>
+      
+      <!-- Botão de Notificações -->
+      <div class="relative mb-2 md:mb-0">
+        <button id="notificationBtn" class="relative">
+          <i class='bx bx-bell text-2xl text-indigo-600 hover:text-indigo-800 transition-colors'></i>
+          <span id="notificationCount" class="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">2</span>
+        </button>
+        
+        <!-- Dropdown de Notificações -->
+        <div id="notificationDropdown" class="notification-dropdown">
+          <div class="p-3 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="font-semibold">Notificações</h3>
+            <button id="markAllRead" class="text-xs text-indigo-600 hover:text-indigo-800">Marcar todas como lidas</button>
+          </div>
+          <div id="notificationList" class="max-h-80 overflow-y-auto">
+            <!-- Notificações serão adicionadas dinamicamente aqui -->
+          </div>
+          <div class="p-3 text-center border-t border-gray-200">
+            <button id="clearAllNotifications" class="text-indigo-600 hover:text-indigo-800 text-sm">Limpar todas as notificações</button>
+          </div>
+        </div>
+      </div>
+      
+
+      <button id="loginBtn" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-md">Login</button>
+    </div>
+    
+    <!-- Navegação Mobile -->
+    <nav class="mobile-nav md:hidden w-full mt-2">
+      <div class="flex justify-around">
+        <a href="index.html" class="flex flex-col items-center text-indigo-600">
+          <i class='bx bx-home text-xl'></i>
+          <span class="text-xs mt-1">Início</span>
+        </a>
+        <a href="calendario.html" class="flex flex-col items-center text-gray-600">
+          <i class='bx bx-calendar text-xl'></i>
+          <span class="text-xs mt-1">Calendário</span>
+        </a>
+        <button class="flex flex-col items-center text-gray-600" onclick="openCustomRewardModal()">
+          <i class='bx bx-gift text-xl'></i>
+          <span class="text-xs mt-1">Recompensas</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-600" id="mobileThemeToggle">
+          <i class='bx bx-moon text-xl' id="mobileThemeIcon"></i>
+          <span class="text-xs mt-1">Tema</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Conteúdo principal -->
+  <main class="flex-1 p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 max-w-7xl mx-auto w-full mobile-spacing">
+    <!-- Tarefas Diárias -->
+    <section class="bg-white p-4 md:p-5 rounded-2xl shadow-lg task-card border-l-indigo-400">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+          <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-indigo-100 to-blue-100 rounded-lg flex items-center justify-center mr-3">
+            <i class='bx bx-sun text-indigo-500 text-lg md:text-xl'></i>
+          </div>
+          <h2 class="text-base md:text-lg font-semibold text-gray-700">Missões Diárias</h2>
+        </div>
+        <button onclick="openEditTaskModal('daily')" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-2 py-1 md:px-3 md:py-1 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-sm flex items-center edit-button">
+          <i class='bx bx-edit mr-1'></i> <span class="hidden sm:inline">Editar</span>
+        </button>
+      </div>
+      <ul id="dailyTasks" class="space-y-3">
+        <li class="flex flex-col sm:flex-row justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg border border-gray-100">
+          <span class="font-medium text-gray-700 dark:text-white mb-2 sm:mb-0">Ler 20 páginas</span>
+          <button onclick="completeTask(this, 50)" class="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1.5 rounded-lg font-medium hover:from-green-500 hover:to-green-600 transition-all duration-300 shadow-sm w-full sm:w-auto">Concluir</button>
+        </li>
+        <li class="flex flex-col sm:flex-row justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg border border-gray-100">
+          <span class="font-medium text-gray-700 dark:text-white mb-2 sm:mb-0">Estudar 1h</span>
+          <button onclick="completeTask(this, 50)" class="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1.5 rounded-lg font-medium hover:from-green-500 hover:to-green-600 transition-all duration-300 shadow-sm w-full sm:w-auto">Concluir</button>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Tarefas Semanais -->
+    <section class="bg-white p-4 md:p-5 rounded-2xl shadow-lg task-card border-l-blue-400">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+          <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-blue-100 to-cyan-100 rounded-lg flex items-center justify-center mr-3">
+            <i class='bx bx-calendar-week text-blue-500 text-lg md:text-xl'></i>
+          </div>
+          <h2 class="text-base md:text-lg font-semibold text-gray-700">Missões Semanais</h2>
+        </div>
+        <button onclick="openEditTaskModal('weekly')" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-2 py-1 md:px-3 md:py-1 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-sm flex items-center edit-button">
+          <i class='bx bx-edit mr-1'></i> <span class="hidden sm:inline">Editar</span>
+        </button>
+      </div>
+      <ul id="weeklyTasks" class="space-y-3">
+        <li class="flex flex-col sm:flex-row justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-100">
+          <span class="font-medium text-gray-700 dark:text-white mb-2 sm:mb-0">Ir à academia 3x</span>
+          <button onclick="completeTask(this, 200)" class="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1.5 rounded-lg font-medium hover:from-green-500 hover:to-green-600 transition-all duration-300 shadow-sm w-full sm:w-auto">Concluir</button>
+        </li>
+        <li class="flex flex-col sm:flex-row justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-100">
+          <span class="font-medium text-gray-700 dark:text-white mb-2 sm:mb-0">Terminar um livro</span>
+          <button onclick="completeTask(this, 200)" class="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1.5 rounded-lg font-medium hover:from-green-500 hover:to-green-600 transition-all duration-300 shadow-sm w-full sm:w-auto">Concluir</button>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Tarefas Mensais -->
+    <section class="bg-white p-4 md:p-5 rounded-2xl shadow-lg task-card border-l-purple-400">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+          <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg flex items-center justify-center mr-3">
+            <i class='bx bx-calendar text-purple-500 text-lg md:text-xl'></i>
+          </div>
+          <h2 class="text-base md:text-lg font-semibold text-gray-700">Missões Mensais</h2>
+        </div>
+        <button onclick="openEditTaskModal('monthly')" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-2 py-1 md:px-3 md:py-1 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-sm flex items-center edit-button">
+          <i class='bx bx-edit mr-1'></i> <span class="hidden sm:inline">Editar</span>
+        </button>
+      </div>
+      <ul id="monthlyTasks" class="space-y-3">
+        <li class="flex flex-col sm:flex-row justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-purple-50 rounded-lg border border-gray-100">
+          <span class="font-medium text-gray-700 dark:text-white mb-2 sm:mb-0">Economizar R$500</span>
+          <button onclick="completeTask(this, 500)" class="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1.5 rounded-lg font-medium hover:from-green-500 hover:to-green-600 transition-all duration-300 shadow-sm w-full sm:w-auto">Concluir</button>
+        </li>
+        <li class="flex flex-col sm:flex-row justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-purple-50 rounded-lg border border-gray-100">
+          <span class="font-medium text-gray-700 dark:text-white mb-2 sm:mb-0">Finalizar curso online</span>
+          <button onclick="completeTask(this, 500)" class="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1.5 rounded-lg font-medium hover:from-green-500 hover:to-green-600 transition-all duration-300 shadow-sm w-full sm:w-auto">Concluir</button>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Loja de Recompensas -->
+  <section class="p-4 md:p-6 bg-gradient-to-r from-indigo-50 to-purple-50 mt-4 md:mt-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row items-center justify-between mb-4 md:mb-6">
+        <div class="flex items-center mb-4 md:mb-0">
+          <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg flex items-center justify-center mr-3">
+            <i class='bx bx-gift text-yellow-500 text-lg md:text-xl'></i>
+          </div>
+          <h2 class="text-lg md:text-xl font-semibold text-gray-700">Resgatar Recompensas</h2>
+        </div>
+        <button onclick="openCustomRewardModal()" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-md flex items-center">
+          <i class='bx bx-plus mr-1'></i> Personalizar
+        </button>
+      </div>
+      <div id="rewardsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+        <div class="bg-white p-4 md:p-5 rounded-xl shadow-md flex flex-col items-center reward-card border border-gray-100">
+          <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-indigo-100 to-blue-100 rounded-full flex items-center justify-center mb-3">
+            <i class='bx bx-time-five text-indigo-500 text-xl md:text-2xl'></i>
+          </div>
+          <span class="text-base md:text-lg font-bold text-gray-700">+1h de lazer</span>
+          <span class="text-xs md:text-sm text-gray-600 mt-1">1000 pontos</span>
+          <button onclick="redeemReward(1000)" class="mt-3 bg-gradient-to-r from-indigo-500 to-blue-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 w-full">Resgatar</button>
+        </div>
+        <div class="bg-white p-4 md:p-5 rounded-xl shadow-md flex flex-col items-center reward-card border border-gray-100">
+          <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-red-100 to-pink-100 rounded-full flex items-center justify-center mb-3">
+            <div class="pizza-logo">
+              <div class="pizza-slice"></div>
+              <div class="pizza-pepperoni"></div>
+              <div class="pizza-pepperoni"></div>
+              <div class="pizza-pepperoni"></div>
+              <div class="pizza-pepperoni"></div>
+              <div class="pizza-pepperoni"></div>
+            </div>
+          </div>
+          <span class="text-base md:text-lg font-bold text-gray-700">Pizza</span>
+          <span class="text-xs md:text-sm text-gray-600 mt-1">5000 pontos</span>
+          <button onclick="redeemReward(5000)" class="mt-3 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-300 w-full">Resgatar</button>
+        </div>
+        <div class="bg-white p-4 md:p-5 rounded-xl shadow-md flex flex-col items-center reward-card border border-gray-100">
+          <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-green-100 to-teal-100 rounded-full flex items-center justify-center mb-3">
+            <i class='bx bx-palette text-green-500 text-xl md:text-2xl'></i>
+          </div>
+          <span class="text-base md:text-lg font-bold text-gray-700">Nova skin</span>
+          <span class="text-xs md:text-sm text-gray-600 mt-1">10000 pontos</span>
+          <button onclick="redeemReward(10000)" class="mt-3 bg-gradient-to-r from-green-500 to-teal-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium hover:from-green-600 hover:to-teal-600 transition-all duration-300 w-full">Resgatar</button>
+        </div>
+        <div class="bg-white p-4 md:p-5 rounded-xl shadow-md flex flex-col items-center reward-card border border-gray-100">
+          <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mb-3">
+            <i class='bx bx-movie-play text-purple-500 text-xl md:text-2xl'></i>
+          </div>
+          <span class="text-base md:text-lg font-bold text-gray-700">Noite de cinema</span>
+          <span class="text-xs md:text-sm text-gray-600 mt-1">3000 pontos</span>
+          <button onclick="redeemReward(3000)" class="mt-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium hover:from-purple-600 hover:to-indigo-600 transition-all duration-300 w-full">Resgatar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-gradient-to-r from-gray-800 to-gray-900 shadow-inner p-4 text-center text-gray-300">
+   © 2025 - FlowUp - Organizador de Tarefas Gamificado
+  </footer>
+
+  <!-- Modal de Login -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Login</h2>
+        <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <i class='bx bx-x text-2xl'></i>
+        </button>
+      </div>
+      <form id="loginForm">
+        <div class="mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usuário</label>
+          <input type="text" id="username" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+        </div>
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha</label>
+          <input type="password" id="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+        </div>
+        <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-300">Entrar</button>
+      </form>
+      <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">Não tem uma conta? <a href="cadastrasse/cadastrasse.html" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">Cadastre-se</a></p>
+    </div>
+  </div>
+
+  <!-- Modal de Personalização de Recompensas -->
+  <div id="customRewardModal" class="custom-reward-modal">
+    <div class="custom-reward-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold dark:text-white">Criar Recompensa Personalizada</h2>
+        <button id="closeCustomRewardModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <i class='bx bx-x text-2xl'></i>
+        </button>
+      </div>
+      <form id="customRewardForm">
+        <div class="mb-4">
+          <label for="rewardName" class="block text-sm font-medium mb-1 dark:text-gray-300">Nome da Recompensa</label>
+          <input type="text" id="rewardName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+        </div>
+        <div class="mb-4">
+          <label for="rewardCost" class="block text-sm font-medium mb-1 dark:text-gray-300">Custo em Pontos</label>
+          <input type="number" id="rewardCost" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+        </div>
+        <div class="mb-4">
+          <label for="rewardDescription" class="block text-sm font-medium mb-1 dark:text-gray-300">Descrição (Opcional)</label>
+          <textarea id="rewardDescription" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows="3"></textarea>
+        </div>
+        <div class="flex justify-end space-x-3">
+          <button type="button" id="cancelCustomReward" class="px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 dark:text-gray-300">Cancelar</button>
+          <button type="submit" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-300">Criar Recompensa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Edição de Tarefas -->
+  <div id="editTaskModal" class="edit-task-modal">
+    <div class="edit-task-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold dark:text-white" id="editTaskModalTitle">Editar Tarefas</h2>
+        <button id="closeEditTaskModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <i class='bx bx-x text-2xl'></i>
+        </button>
+      </div>
+      <div id="editTaskFormContainer">
+        <!-- Formulário será preenchido dinamicamente -->
+      </div>
+      <div class="flex flex-col sm:flex-row justify-between mt-4 gap-2">
+        <button id="addNewTask" class="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-2 rounded-lg font-medium hover:from-green-600 hover:to-teal-600 transition-all duration-300 flex items-center justify-center order-2 sm:order-1">
+          <i class='bx bx-plus mr-1'></i> Adicionar Tarefa
+        </button>
+        <div class="flex justify-end gap-2 order-1 sm:order-2">
+          <button id="cancelEditTask" class="px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 dark:text-gray-300">Cancelar</button>
+          <button id="saveTasks" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-300">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Função para completar tarefas
+    function completeTask(button, reward) {
+        points += reward;
+        document.getElementById("points").innerText = points;
+        
+        // Salvar automaticamente
+        savePoints(points);
+        saveCompletedTasks();
+
+        button.disabled = true;
+        button.innerText = "Concluído";
+        button.classList.remove("bg-gradient-to-r", "from-green-400", "to-green-500", "hover:from-green-500", "hover:to-green-600");
+        button.classList.add("bg-gray-400");
+
+        // Aplicar estilo baseado no modo atual
+        const taskItem = button.parentElement;
+        const taskText = taskItem.querySelector('span');
+        
+        // Adicionar classe para o texto
+        taskText.classList.add('task-completed-text');
+        
+        // Aplicar fundo baseado no modo
+        if (isDarkMode) {
+            taskItem.classList.add('task-completed-dark');
+            taskItem.classList.remove('task-completed-light');
+        } else {
+            taskItem.classList.add('task-completed-light');
+            taskItem.classList.remove('task-completed-dark');
+        }
+        
+        addNotification(`Você ganhou ${reward} pontos por completar uma tarefa!`);
+    }
+
+    // Carregar tarefas completadas
+    function loadCompletedTasks() {
+        const completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '[]');
+        document.querySelectorAll('li').forEach(li => {
+            const taskText = li.querySelector('span').textContent;
+            if (completedTasks.includes(taskText)) {
+                const button = li.querySelector('button');
+                if (button) {
+                    button.disabled = true;
+                    button.innerText = "Concluído";
+                    button.classList.remove("bg-gradient-to-r", "from-green-400", "to-green-500", "hover:from-green-500", "hover:to-green-600");
+                    button.classList.add("bg-gray-400");
+                    
+                    // Adicionar classe para o texto
+                    const textSpan = li.querySelector('span');
+                    textSpan.classList.add('task-completed-text');
+                    
+                    // Aplicar estilo baseado no modo atual
+                    if (isDarkMode) {
+                        li.classList.add('task-completed-dark');
+                        li.classList.remove('task-completed-light');
+                    } else {
+                        li.classList.add('task-completed-light');
+                        li.classList.remove('task-completed-dark');
+                    }
+                }
+            }
+        });
+    }
+
+    // Atualizar cores das tarefas completadas quando o tema mudar
+    function updateCompletedTasksColors() {
+        document.querySelectorAll('li').forEach(li => {
+            const button = li.querySelector('button');
+            if (button && button.disabled && button.innerText === "Concluído") {
+                const textSpan = li.querySelector('span');
+                textSpan.classList.add('task-completed-text');
+                
+                if (isDarkMode) {
+                    li.classList.add('task-completed-dark');
+                    li.classList.remove('task-completed-light');
+                } else {
+                    li.classList.add('task-completed-light');
+                    li.classList.remove('task-completed-dark');
+                }
+            }
+        });
+    }
+
+    // Sistema de salvamento automático
+    function savePoints(points) {
+        localStorage.setItem('FlowPoints', points.toString());
+        localStorage.setItem('lastSave', new Date().toISOString());
+    }
+
+    // Carregar pontos do Local Storage
+    function loadPoints() {
+        const savedPoints = localStorage.getItem('FlowPoints');
+        return savedPoints ? parseInt(savedPoints) : 0;
+    }
+
+    // Salvar tarefas personalizadas
+    function saveCustomTasks() {
+        const customTasks = {
+            daily: [],
+            weekly: [],
+            monthly: []
+        };
+        
+        // Salvar tarefas diárias
+        const dailyTasks = document.getElementById('dailyTasks');
+        dailyTasks.querySelectorAll('li').forEach(li => {
+            const taskText = li.querySelector('span').textContent;
+            customTasks.daily.push(taskText);
+        });
+        
+        // Salvar tarefas semanais
+        const weeklyTasks = document.getElementById('weeklyTasks');
+        weeklyTasks.querySelectorAll('li').forEach(li => {
+            const taskText = li.querySelector('span').textContent;
+            customTasks.weekly.push(taskText);
+        });
+        
+        // Salvar tarefas mensais
+        const monthlyTasks = document.getElementById('monthlyTasks');
+        monthlyTasks.querySelectorAll('li').forEach(li => {
+            const taskText = li.querySelector('span').textContent;
+            customTasks.monthly.push(taskText);
+        });
+        
+        localStorage.setItem('customTasks', JSON.stringify(customTasks));
+    }
+
+    // Carregar tarefas personalizadas
+    function loadCustomTasks() {
+        const savedTasks = localStorage.getItem('customTasks');
+        if (savedTasks) {
+            const customTasks = JSON.parse(savedTasks);
+            
+            // Carregar tarefas diárias
+            const dailyTasks = document.getElementById('dailyTasks');
+            dailyTasks.innerHTML = '';
+            customTasks.daily.forEach(taskText => {
+                const taskItem = createTaskItem(taskText, 'daily', 50);
+                dailyTasks.appendChild(taskItem);
+            });
+            
+            // Carregar tarefas semanais
+            const weeklyTasks = document.getElementById('weeklyTasks');
+            weeklyTasks.innerHTML = '';
+            customTasks.weekly.forEach(taskText => {
+                const taskItem = createTaskItem(taskText, 'weekly', 200);
+                weeklyTasks.appendChild(taskItem);
+            });
+            
+            // Carregar tarefas mensais
+            const monthlyTasks = document.getElementById('monthlyTasks');
+            monthlyTasks.innerHTML = '';
+            customTasks.monthly.forEach(taskText => {
+                const taskItem = createTaskItem(taskText, 'monthly', 500);
+                monthlyTasks.appendChild(taskItem);
+            });
+        }
+    }
+
+    // Criar item de tarefa
+    function createTaskItem(taskText, type, points) {
+        const taskItem = document.createElement('li');
+        
+        let gradientClass = 'from-gray-50 to-indigo-50';
+        if (type === 'weekly') gradientClass = 'from-gray-50 to-blue-50';
+        if (type === 'monthly') gradientClass = 'from-gray-50 to-purple-50';
+        
+        taskItem.className = `flex flex-col sm:flex-row justify-between items-center p-3 bg-gradient-to-r ${gradientClass} rounded-lg border border-gray-100 dark:border-gray-600`;
+        
+        taskItem.innerHTML = `
+            <span class="font-medium text-gray-700 dark:text-white mb-2 sm:mb-0">${taskText}</span>
+            <button onclick="completeTask(this, ${points})" class="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1.5 rounded-lg font-medium hover:from-green-500 hover:to-green-600 transition-all duration-300 shadow-sm w-full sm:w-auto">Concluir</button>
+        `;
+        
+        return taskItem;
+    }
+
+    // Salvar tarefas completadas
+    function saveCompletedTasks() {
+        const completedTasks = [];
+        document.querySelectorAll('button[disabled]').forEach(button => {
+            const taskText = button.parentElement.querySelector('span').textContent;
+            completedTasks.push(taskText);
+        });
+        localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+    }
+
+    // Função para resgatar recompensas
+    function redeemReward(cost) {
+        if (points >= cost) {
+            points -= cost;
+            document.getElementById("points").innerText = points;
+            
+            // Salvar automaticamente
+            savePoints(points);
+            
+            addNotification("Recompensa resgatada com sucesso!");
+        } else {
+            alert("Pontos insuficientes!");
+        }
+    }
+
+    let points = 0;
+    let isLoggedIn = false;
+    let isDarkMode = false;
+    let notifications = [
+      { id: 1, message: "Você ganhou 50 pontos por completar uma tarefa!", time: "5 min atrás", read: false },
+      { id: 2, message: "Nova missão semanal disponível: Ir à academia 3x", time: "1 hora atrás", read: false },
+      { id: 3, message: "Parabéns! Você alcançou 500 pontos.", time: "2 horas atrás", read: true },
+      { id: 4, message: "Recompensa disponível: +1h de lazer por 1000 pontos", time: "1 dia atrás", read: true }
+    ];
+
+    // Elementos do DOM
+    const loginBtn = document.getElementById('loginBtn');
+    const loginModal = document.getElementById('loginModal');
+    const closeModal = document.getElementById('closeModal');
+    const loginForm = document.getElementById('loginForm');
+    const notificationBtn = document.getElementById('notificationBtn');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationList = document.getElementById('notificationList');
+    const notificationCount = document.getElementById('notificationCount');
+    const markAllRead = document.getElementById('markAllRead');
+    const clearAllNotifications = document.getElementById('clearAllNotifications');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const mobileThemeToggle = document.getElementById('mobileThemeToggle');
+    const mobileThemeIcon = document.getElementById('mobileThemeIcon');
+    
+    // Novos elementos para funcionalidades adicionadas
+    const customRewardModal = document.getElementById('customRewardModal');
+    const closeCustomRewardModal = document.getElementById('closeCustomRewardModal');
+    const cancelCustomReward = document.getElementById('cancelCustomReward');
+    const customRewardForm = document.getElementById('customRewardForm');
+    
+    const editTaskModal = document.getElementById('editTaskModal');
+    const closeEditTaskModal = document.getElementById('closeEditTaskModal');
+    const cancelEditTask = document.getElementById('cancelEditTask');
+    const addNewTask = document.getElementById('addNewTask');
+    const saveTasks = document.getElementById('saveTasks');
+    const editTaskFormContainer = document.getElementById('editTaskFormContainer');
+    const editTaskModalTitle = document.getElementById('editTaskModalTitle');
+    const rewardsContainer = document.getElementById('rewardsContainer');
+
+    // Verificar preferência de tema salva
+    function loadThemePreference() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        enableDarkMode();
+      } else if (savedTheme === 'light') {
+        disableDarkMode();
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // Se não houver preferência salva, usar a preferência do sistema
+        enableDarkMode();
+      }
+    }
+
+    // Ativar modo escuro
+    function enableDarkMode() {
+      document.body.classList.add('dark');
+      themeIcon.classList.remove('bx-moon');
+      themeIcon.classList.add('bx-sun');
+      if (mobileThemeIcon) {
+        mobileThemeIcon.classList.remove('bx-moon');
+        mobileThemeIcon.classList.add('bx-sun');
+      }
+      isDarkMode = true;
+      localStorage.setItem('theme', 'dark');
+      // Atualizar cores das tarefas completadas
+      updateCompletedTasksColors();
+    }
+
+    // Desativar modo escuro
+    function disableDarkMode() {
+      document.body.classList.remove('dark');
+      themeIcon.classList.remove('bx-sun');
+      themeIcon.classList.add('bx-moon');
+      if (mobileThemeIcon) {
+        mobileThemeIcon.classList.remove('bx-sun');
+        mobileThemeIcon.classList.add('bx-moon');
+      }
+      isDarkMode = false;
+      localStorage.setItem('theme', 'light');
+      // Atualizar cores das tarefas completadas
+      updateCompletedTasksColors();
+    }
+
+    // Alternar entre modo claro e escuro
+    function toggleTheme() {
+        if (isDarkMode) {
+            disableDarkMode();
+        } else {
+            enableDarkMode();
+        }
+        forceTextColors();
+        updateCompletedTasksColors();
+    }
+
+    // Forçar cores corretas no carregamento da página
+    function forceTextColors() {
+        const isDark = document.body.classList.contains('dark');
+        
+        document.querySelectorAll('.task-card span').forEach(span => {
+            if (isDark) {
+                span.style.color = "#ffffff";
+            } else {
+                span.style.color = "#000000";
+            }
+        });
+        
+        document.querySelectorAll('.task-card h2').forEach(h2 => {
+            if (isDark) {
+                h2.style.color = "#ffffff";
+            } else {
+                h2.style.color = "#000000";
+            }
+        });
+    }
+
+    // Inicializar notificações
+    function initNotifications() {
+      updateNotificationCount();
+      renderNotifications();
+    }
+
+    // Atualizar contador de notificações não lidas
+    function updateNotificationCount() {
+      const unreadCount = notifications.filter(n => !n.read).length;
+      notificationCount.textContent = unreadCount;
+      if (unreadCount === 0) {
+        notificationCount.style.display = 'none';
+      } else {
+        notificationCount.style.display = 'block';
+      }
+    }
+
+    // Renderizar lista de notificações
+    function renderNotifications() {
+      notificationList.innerHTML = '';
+      
+      if (notifications.length === 0) {
+        notificationList.innerHTML = '<div class="p-4 text-center text-gray-500 dark:text-gray-400">Nenhuma notificação</div>';
+        return;
+      }
+      
+      notifications.forEach(notification => {
+        const notificationItem = document.createElement('div');
+        notificationItem.className = `notification-item ${notification.read ? '' : 'unread'}`;
+        notificationItem.innerHTML = `
+          <div class="flex justify-between">
+            <div class="flex-1">
+              <p class="text-sm dark:text-gray-300">${notification.message}</p>
+              <span class="notification-time">${notification.time}</span>
+            </div>
+            ${!notification.read ? '<span class="w-2 h-2 bg-red-500 rounded-full ml-2 mt-1"></span>' : ''}
+          </div>
+        `;
+        
+        notificationItem.addEventListener('click', () => {
+          markAsRead(notification.id);
+        });
+        
+        notificationList.appendChild(notificationItem);
+      });
+    }
+
+    // Marcar notificação como lida
+    function markAsRead(id) {
+      const notification = notifications.find(n => n.id === id);
+      if (notification && !notification.read) {
+        notification.read = true;
+        updateNotificationCount();
+        renderNotifications();
+      }
+    }
+
+    // Marcar todas as notificações como lidas
+    function markAllAsRead() {
+      notifications.forEach(notification => {
+        notification.read = true;
+      });
+      updateNotificationCount();
+      renderNotifications();
+    }
+
+    // Limpar todas as notificações
+    function clearAllNotificationsFunc() {
+      notifications = [];
+      updateNotificationCount();
+      renderNotifications();
+      notificationDropdown.style.display = 'none';
+      addNotification("Todas as notificações foram limpas.");
+    }
+
+    // Adicionar nova notificação
+    function addNotification(message) {
+      const newNotification = {
+        id: notifications.length > 0 ? Math.max(...notifications.map(n => n.id)) + 1 : 1,
+        message: message,
+        time: "Agora",
+        read: false
+      };
+      
+      notifications.unshift(newNotification);
+      updateNotificationCount();
+      renderNotifications();
+      
+      // Mostrar notificação toast
+      showToast(message);
+    }
+
+    // Mostrar toast de notificação
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-20 right-5 bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center';
+      toast.innerHTML = `
+        <i class='bx bx-bell mr-2'></i>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // Função de login
+    function login(username, password) {
+      // Simulação de autenticação
+      if (username && password) {
+        isLoggedIn = true;
+        loginBtn.textContent = 'Logout';
+        loginBtn.classList.remove('from-indigo-500', 'to-purple-600', 'hover:from-indigo-600', 'hover:to-purple-700');
+        loginBtn.classList.add('from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
+        
+        // Adicionar notificação de boas-vindas
+        addNotification(`Bem-vindo de volta, ${username}!`);
+        
+        // Fechar modal
+        loginModal.style.display = 'none';
+        
+        return true;
+      }
+      return false;
+    }
+
+    // Função de logout
+    function logout() {
+      isLoggedIn = false;
+      loginBtn.textContent = 'Login';
+      loginBtn.classList.remove('from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
+      loginBtn.classList.add('from-indigo-500', 'to-purple-600', 'hover:from-indigo-600', 'hover:to-purple-700');
+      
+      // Adicionar notificação de logout
+      addNotification("Você saiu da sua conta.");
+    }
+
+    // Abrir modal de personalização de recompensas
+    function openCustomRewardModal() {
+      customRewardModal.style.display = 'flex';
+    }
+
+    // Fechar modal de personalização de recompensas
+    function closeCustomRewardModalFunc() {
+      customRewardModal.style.display = 'none';
+      customRewardForm.reset();
+    }
+
+    // Abrir modal de edição de tarefas
+    function openEditTaskModal(type) {
+      editTaskModal.style.display = 'flex';
+      
+      // Definir título baseado no tipo
+      let title = '';
+      switch(type) {
+        case 'daily':
+          title = 'Editar Tarefas Diárias';
+          break;
+        case 'weekly':
+          title = 'Editar Tarefas Semanais';
+          break;
+        case 'monthly':
+          title = 'Editar Tarefas Mensais';
+          break;
+        default:
+          title = 'Editar Tarefas';
+      }
+      editTaskModalTitle.textContent = title;
+      
+      // Preencher formulário com tarefas existentes
+      editTaskFormContainer.innerHTML = '';
+      const taskList = document.getElementById(`${type}Tasks`);
+      const tasks = taskList.querySelectorAll('li');
+      
+      tasks.forEach((task, index) => {
+        const taskText = task.querySelector('span').textContent;
+        const taskForm = document.createElement('div');
+        taskForm.className = 'mb-4 p-3 border border-gray-200 rounded-lg dark:border-gray-600';
+        taskForm.innerHTML = `
+          <div class="flex justify-between items-center">
+            <input type="text" value="${taskText}" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" data-task-index="${index}">
+            <button type="button" class="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 delete-task" data-task-index="${index}">
+              <i class='bx bx-trash'></i>
+            </button>
+          </div>
+        `;
+        editTaskFormContainer.appendChild(taskForm);
+      });
+      
+      // Armazenar o tipo de tarefa para uso posterior
+      editTaskModal.dataset.taskType = type;
+    }
+
+    // Fechar modal de edição de tarefas
+    function closeEditTaskModalFunc() {
+      editTaskModal.style.display = 'none';
+    }
+
+    // Adicionar nova tarefa no modal de edição
+    function addNewTaskFunc() {
+      const taskForm = document.createElement('div');
+      taskForm.className = 'mb-4 p-3 border border-gray-200 rounded-lg dark:border-gray-600';
+      const taskCount = editTaskFormContainer.children.length;
+      taskForm.innerHTML = `
+        <div class="flex justify-between items-center">
+          <input type="text" placeholder="Nova tarefa" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" data-task-index="${taskCount}">
+          <button type="button" class="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 delete-task" data-task-index="${taskCount}">
+            <i class='bx bx-trash'></i>
+          </button>
+        </div>
+      `;
+      editTaskFormContainer.appendChild(taskForm);
+      
+      // Adicionar evento de clique ao botão de exclusão
+      const deleteBtn = taskForm.querySelector('.delete-task');
+      deleteBtn.addEventListener('click', function() {
+        taskForm.remove();
+      });
+    }
+
+    // Função salvar tarefas
+    function saveTasksFunc() {
+      const taskType = editTaskModal.dataset.taskType;
+      const taskList = document.getElementById(`${taskType}Tasks`);
+      
+      // Limpar lista atual
+      taskList.innerHTML = '';
+      
+      // Adicionar novas tarefas
+      const taskInputs = editTaskFormContainer.querySelectorAll('input');
+      taskInputs.forEach((input, index) => {
+        if (input.value.trim() !== '') {
+          const taskItem = document.createElement('li');
+          
+          // Determinar a classe de cor baseada no tipo de tarefa
+          let gradientClass = 'from-gray-50 to-indigo-50';
+          if (taskType === 'weekly') gradientClass = 'from-gray-50 to-blue-50';
+          if (taskType === 'monthly') gradientClass = 'from-gray-50 to-purple-50';
+          
+          taskItem.className = `flex flex-col sm:flex-row justify-between items-center p-3 bg-gradient-to-r ${gradientClass} rounded-lg border border-gray-100 dark:border-gray-600`;
+          
+          // Determinar pontos baseado no tipo de tarefa
+          let taskPoints = 50;
+          if (taskType === 'weekly') taskPoints = 200;
+          if (taskType === 'monthly') taskPoints = 500;
+          
+          taskItem.innerHTML = `
+            <span class="font-medium text-gray-700 dark:text-white mb-2 sm:mb-0">${input.value}</span>
+            <button onclick="completeTask(this, ${taskPoints})" class="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1.5 rounded-lg font-medium hover:from-green-500 hover:to-green-600 transition-all duration-300 shadow-sm w-full sm:w-auto">Concluir</button>
+          `;
+          taskList.appendChild(taskItem);
+        }
+      });
+      
+      // Fechar modal
+      closeEditTaskModalFunc();
+      
+      // SALVAR TAREFAS PERSONALIZADAS
+      saveCustomTasks();
+      saveCompletedTasks();
+      
+      // Adicionar notificação
+      addNotification(`Tarefas ${taskType} atualizadas e salvas com sucesso!`);
+    }
+
+    // Criar recompensa personalizada
+    function createCustomReward(name, cost, description) {
+      const rewardCard = document.createElement('div');
+      rewardCard.className = 'bg-white p-4 md:p-5 rounded-xl shadow-md flex flex-col items-center reward-card border border-gray-100';
+      
+      // Determinar cor baseada no custo
+      let colorClass = 'from-indigo-100 to-blue-100';
+      let textColor = 'text-indigo-500';
+      let buttonClass = 'from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600';
+      
+      if (cost >= 5000) {
+        colorClass = 'from-red-100 to-pink-100';
+        textColor = 'text-red-500';
+        buttonClass = 'from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600';
+      } else if (cost >= 3000) {
+        colorClass = 'from-purple-100 to-indigo-100';
+        textColor = 'text-purple-500';
+        buttonClass = 'from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600';
+      }
+      
+      rewardCard.innerHTML = `
+        <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r ${colorClass} rounded-full flex items-center justify-center mb-3">
+          <i class='bx bx-gift ${textColor} text-xl md:text-2xl'></i>
+        </div>
+        <span class="text-base md:text-lg font-bold text-gray-700">${name}</span>
+        <span class="text-xs md:text-sm text-gray-600 mt-1">${cost} pontos</span>
+        <button onclick="redeemReward(${cost})" class="mt-3 bg-gradient-to-r ${buttonClass} text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-300 w-full">Resgatar</button>
+      `;
+      
+      // Adicionar a recompensa ao container
+      rewardsContainer.appendChild(rewardCard);
+      
+      // Adicionar notificação
+      addNotification(`Recompensa personalizada "${name}" criada por ${cost} pontos!`);
+      
+      // Salvar recompensas personalizadas
+      saveCustomRewards();
+    }
+
+    // Salvar recompensas personalizadas
+    function saveCustomRewards() {
+        const customRewards = [];
+        document.querySelectorAll('#rewardsContainer .bg-white').forEach(rewardCard => {
+            const name = rewardCard.querySelector('span.text-base').textContent;
+            const cost = parseInt(rewardCard.querySelector('span.text-xs').textContent.replace(' pontos', ''));
+            customRewards.push({ name, cost });
+        });
+        localStorage.setItem('customRewards', JSON.stringify(customRewards));
+    }
+
+    // Carregar recompensas personalizadas
+    function loadCustomRewards() {
+        const savedRewards = localStorage.getItem('customRewards');
+        if (savedRewards) {
+            const customRewards = JSON.parse(savedRewards);
+            customRewards.forEach(reward => {
+                createCustomReward(reward.name, reward.cost, '');
+            });
+        }
+    }
+
+    // Event Listeners
+    loginBtn.addEventListener('click', () => {
+      if (isLoggedIn) {
+        logout();
+      } else {
+        loginModal.style.display = 'flex';
+      }
+    });
+
+    closeModal.addEventListener('click', () => {
+      loginModal.style.display = 'none';
+    });
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      if (login(username, password)) {
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+      } else {
+        alert('Por favor, preencha todos os campos.');
+      }
+    });
+
+    notificationBtn.addEventListener('click', () => {
+      notificationDropdown.style.display = notificationDropdown.style.display === 'block' ? 'none' : 'block';
+    });
+
+    markAllRead.addEventListener('click', (e) => {
+      e.stopPropagation();
+      markAllAsRead();
+    });
+
+    clearAllNotifications.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearAllNotificationsFunc();
+    });
+
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    // Event listener para o botão de tema mobile
+    if (mobileThemeToggle) {
+      mobileThemeToggle.addEventListener('click', toggleTheme);
+    }
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', (e) => {
+      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+        notificationDropdown.style.display = 'none';
+      }
+    });
+
+    // Event Listeners para novas funcionalidades
+    closeCustomRewardModal.addEventListener('click', closeCustomRewardModalFunc);
+    cancelCustomReward.addEventListener('click', closeCustomRewardModalFunc);
+    
+    closeEditTaskModal.addEventListener('click', closeEditTaskModalFunc);
+    cancelEditTask.addEventListener('click', closeEditTaskModalFunc);
+    addNewTask.addEventListener('click', addNewTaskFunc);
+    saveTasks.addEventListener('click', saveTasksFunc);
+
+    // Event Listener para formulário de recompensa personalizada
+    customRewardForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const rewardName = document.getElementById('rewardName').value;
+      const rewardCost = parseInt(document.getElementById('rewardCost').value);
+      const rewardDescription = document.getElementById('rewardDescription').value;
+      
+      // Criar a recompensa personalizada
+      createCustomReward(rewardName, rewardCost, rewardDescription);
+      
+      // Fechar modal e limpar formulário
+      closeCustomRewardModalFunc();
+    });
+
+    // Adicionar eventos de clique para botões de exclusão de tarefas (delegation)
+    editTaskFormContainer.addEventListener('click', function(e) {
+      if (e.target.classList.contains('delete-task') || e.target.closest('.delete-task')) {
+        const deleteBtn = e.target.classList.contains('delete-task') ? e.target : e.target.closest('.delete-task');
+        const taskForm = deleteBtn.closest('.mb-4');
+        taskForm.remove();
+      }
+    });
+
+    // Inicializar notificações e tema ao carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+      initNotifications();
+      loadThemePreference();
+      
+      // Carregar pontos e tarefas salvas
+      points = loadPoints();
+      document.getElementById("points").innerText = points;
+      loadCustomTasks(); // Carregar tarefas personalizadas
+      loadCompletedTasks(); // Carregar tarefas completadas
+      forceTextColors(); // Forçar cores corretas
+    });
+  </script>
+</body>
+</html>

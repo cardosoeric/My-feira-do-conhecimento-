@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowUp - Organizador de Tarefas Gamificado</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .calendar-container {
+  max-width: 900px;
+  margin: 140px auto 20px; /* Aumente de 120px para 140px */
+  /* resto do código permanece igual */
+}
+
+@media (max-width: 768px) {
+  .calendar-container {
+    margin: 160px auto 20px; /* Ajuste para mobile */
+  }
+}
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f7fa;
+      transition: background-color 0.3s, color 0.3s;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* CABEÇALHO */
+    .header-gradient {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: background 0.3s;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .dark .header-gradient {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: #ffffff;
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* LADO ESQUERDO - LOGO E INÍCIO */
+    .left-section {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      white-space: nowrap;
+    }
+
+    .dark .logo-text {
+      background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-link {
+      color: #4b5563;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover {
+      color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .dark .nav-link {
+      color: #e5e7eb !important;
+    }
+
+    .dark .nav-link:hover {
+      color: #a5b4fc !important;
+      background: rgba(165, 180, 252, 0.1);
+    }
+
+    /* Garante que todos os textos do header fiquem brancos no modo escuro */
+    .dark header,
+    .dark header *:not(.logo-text):not(.notification-badge):not(.badge):not(.points-display) {
+      color: #ffffff;
+    }
+
+    /* Corrige especificamente os links de navegação */
+    .dark nav a {
+      color: #e5e7eb !important;
+    }
+
+    .dark nav a:hover {
+      color: #a5b4fc !important;
+    }
+
+    /* LADO DIREITO - AÇÕES */
+    .right-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .points-display {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      color: white;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+
+    .notification-container {
+      position: relative;
+    }
+
+    .notification-badge {
+      position: relative;
+      color: #6366f1;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .notification-badge:hover {
+      color: #4f46e5;
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .badge {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.25rem;
+      background: #ef4444;
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.125rem 0.375rem;
+      border-radius: 9999px;
+      min-width: 1.25rem;
+      text-align: center;
+      font-weight: 600;
+      animation: pulse 2s infinite;
+      line-height: 1;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      white-space: nowrap;
+    }
+
+    .login-btn:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .login-btn.logout {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .login-btn.logout:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+
+    /* MODAL DE LOGIN - SEMPRE ESCURO */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #4b5563;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      font-family: inherit;
+      background: #374151;
+      color: #e5e7eb;
+    }
+
+    .modal-content input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .modal-content button[type="submit"] {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    .modal-content button[type="submit"]:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+
+    /* CALENDÁRIO */
+    .calendar-container {
+      max-width: 900px;
+      margin: 120px auto 20px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      padding: 0;
+      transition: background 0.3s;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .dark .calendar-container {
+      background: #1e293b;
+    }
+
+    .calendar-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .dark .calendar-header {
+      background: linear-gradient(135deg, #4c51bf 0%, #6b46c1 100%);
+    }
+
+    .calendar-header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+      text-align: center;
+      flex: 1;
+    }
+
+    .calendar-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .calendar-controls button {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-family: inherit;
+    }
+
+    .calendar-controls button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .theme-toggle-header {
+      background: rgba(255, 255, 255, 0.2) !important;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .theme-toggle-header:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      background: #e0e0e0;
+    }
+
+    .weekday-header {
+      background: #f8fafc;
+      text-align: center;
+      font-weight: 600;
+      color: #475569;
+      padding: 15px 0;
+      border: 1px solid #e2e8f0;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .dark .weekday-header {
+      background: #334155;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+    }
+
+    .calendar-day {
+      background: white;
+      border: 1px solid #e2e8f0;
+      padding: 12px;
+      min-height: 100px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .dark .calendar-day {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+    }
+
+    .calendar-day:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+    }
+
+    .calendar-day-header {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+      transition: color 0.3s;
+    }
+
+    .dark .calendar-day-header {
+      color: #e2e8f0;
+    }
+
+    .calendar-day-content {
+      font-size: 0.85rem;
+      color: #555;
+      min-height: 60px;
+      overflow-y: auto;
+      transition: color 0.3s;
+      text-align: left;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .dark .calendar-day-content {
+      color: #94a3b8;
+    }
+
+    .calendar-day-content:empty:before {
+      content: "Clique para adicionar nota";
+      color: #aaa;
+      font-style: italic;
+      font-size: 0.8rem;
+    }
+
+    .dark .calendar-day-content:empty:before {
+      color: #64748b;
+    }
+
+    .other-month {
+      background: #f8fafc;
+      color: #cbd5e1;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .dark .other-month {
+      background: #334155;
+      color: #64748b;
+    }
+
+    .today {
+      background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+      border: 2px solid #667eea;
+    }
+
+    .dark .today {
+      background: linear-gradient(135deg, #4c51bf15 0%, #6b46c115 100%);
+      border: 2px solid #4c51bf;
+    }
+
+    .today .calendar-day-header {
+      color: #667eea;
+      font-weight: 700;
+    }
+
+    .dark .today .calendar-day-header {
+      color: #4c51bf;
+    }
+
+    /* DROPDOWN DE NOTIFICAÇÕES */
+    .notification-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 320px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
+
+    .dark .notification-dropdown {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+
+    .notification-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .dark .notification-item {
+      border-bottom: 1px solid #334155;
+    }
+
+    .notification-item:hover {
+      background: #f9f9f9;
+    }
+
+    .dark .notification-item:hover {
+      background: #334155;
+    }
+
+    .notification-item.unread {
+      background: #f0f7ff;
+    }
+
+    .dark .notification-item.unread {
+      background: #1e3a5f;
+    }
+
+    .notification-time {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .dark .notification-time {
+      color: #94a3b8;
+    }
+
+    /* MODO ESCURO */
+    .dark {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .dark .bg-white {
+      background: #1e293b;
+    }
+
+    button:focus, input:focus, textarea:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+
+    /* RESPONSIVIDADE */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .left-section {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .right-section {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .points-display {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+      }
+
+      .login-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+/* HEADER RESPONSIVO - ESTILO DO SEGUNDO SITE */
+.header-gradient {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.dark .header-gradient {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+/* Ajustes para o layout flex do header */
+header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* Logo Section */
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  width: 2rem;
+  height: 2rem;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  white-space: nowrap;
+}
+
+/* Navegação Desktop */
+.desktop-nav {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktop-nav {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+/* Botão de Tema */
+.theme-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+  color: #4b5563;
+}
+
+.theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dark .theme-toggle {
+  color: #e5e7eb;
+}
+
+.dark .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Points Display */
+.points-display {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+
+/* Notification Container */
+.notification-container {
+  position: relative;
+}
+
+.notification-badge {
+  position: relative;
+  color: #6366f1;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-badge:hover {
+  color: #4f46e5;
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.badge {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: #ef4444;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  min-width: 1.25rem;
+  text-align: center;
+  font-weight: 600;
+  animation: pulse 2s infinite;
+  line-height: 1;
+}
+
+/* Login Button */
+.login-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.login-btn:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.login-btn.logout {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.login-btn.logout:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+/* Navegação Mobile */
+.mobile-nav {
+  display: block;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .mobile-nav {
+    display: none;
+  }
+}
+
+.mobile-nav div {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.mobile-nav a,
+.mobile-nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.mobile-nav a:hover,
+.mobile-nav button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dark .mobile-nav a:hover,
+.dark .mobile-nav button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* RESPONSIVIDADE ESPECÍFICA */
+@media (max-width: 768px) {
+  .header-gradient {
+    padding: 0.75rem;
+  }
+  
+  .logo-text {
+    font-size: 1.125rem;
+  }
+  
+  .points-display {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .notification-badge {
+    font-size: 1.25rem;
+    padding: 0.375rem;
+  }
+  
+  .login-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Garantir que os elementos fiquem centralizados em mobile */
+  .flex-wrap.justify-center {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-gradient {
+    padding: 0.5rem;
+  }
+  
+  .logo-text {
+    font-size: 1rem;
+  }
+  
+  .points-display {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .login-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav a span,
+  .mobile-nav button span {
+    font-size: 0.7rem;
+  }
+}
+
+/* Ajustes para orientação paisagem em mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .header-gradient {
+    padding: 0.5rem;
+    position: relative;
+  }
+}
+      .notification-dropdown {
+        width: 280px;
+        right: 50%;
+        transform: translateX(50%);
+      }
+
+      .calendar-header {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .calendar-controls {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .left-section {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .right-section {
+        gap: 0.5rem;
+      }
+
+      .points-display {
+        order: -1;
+      }
+
+      .calendar-day {
+        min-height: 80px;
+        padding: 8px;
+      }
+
+      .calendar-day-content {
+        font-size: 0.8rem;
+        min-height: 50px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header-gradient {
+        padding: 0.75rem;
+      }
+
+      .logo-text {
+        font-size: 1.125rem;
+      }
+
+      .nav-link {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+      }
+
+      .notification-badge {
+        padding: 0.375rem;
+        font-size: 1.25rem;
+      }
+
+      .points-display {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+      }
+
+      .login-btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+      }
+
+      .calendar-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .calendar-controls button {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 text-gray-800 min-h-screen flex flex-col">
+  <!-- CABEÇALHO CORRIGIDO -->
+  <!-- CABEÇALHO CORRIGIDO -->
+<header class="header-gradient shadow-lg p-4 flex flex-col md:flex-row justify-between items-center sticky top-0 z-10">
+  <div class="flex items-center space-x-4 mb-4 md:mb-0">
+    <div class="logo-section">
+      <div class="logo-icon">
+        <i class='bx bx-check-square text-white'></i>
+      </div>
+      <span class="logo-text">FlowUp</span>
+    </div>
+    <nav class="desktop-nav hidden md:flex space-x-4">
+      <a href="index.html" class="nav-link">Início</a>
+      <a href="#" class="nav-link">Calendário</a>
+    </nav>
+  </div>
+
+  <!-- LADO DIREITO - AÇÕES -->
+  <div class="flex items-center space-x-4 flex-wrap justify-center">
+    <!-- Botão de alternar tema -->
+    <button id="themeToggleHeader" class="theme-toggle text-gray-700 bg-transparent border-none cursor-pointer text-xl">
+      <i class='bx bx-moon' id="themeIconHeader"></i>
+    </button>
+    
+    <!-- Botão de Notificações -->
+    <div class="notification-container mb-2 md:mb-0">
+      <button id="notificationBtn" class="notification-badge">
+        <i class='bx bx-bell'></i>
+        <span id="notificationCount" class="badge">2</span>
+      </button>
+      
+      <!-- Dropdown de Notificações -->
+      <div id="notificationDropdown" class="notification-dropdown">
+        <div class="p-3 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
+          <h3 class="font-semibold dark:text-white">Notificações</h3>
+          <button id="markAllRead" class="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">Marcar todas como lidas</button>
+        </div>
+        <div id="notificationList" class="max-h-80 overflow-y-auto">
+          <!-- Notificações serão adicionadas dinamicamente aqui -->
+        </div>
+        <div class="p-3 text-center border-t border-gray-200 dark:border-gray-600">
+          <button id="clearAllNotifications" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm">Limpar todas as notificações</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Botão de Login/Logout -->
+    <button id="loginBtn" class="login-btn mb-2 md:mb-0">Login</button>
+  </div>
+  
+  <!-- Navegação Mobile -->
+  <nav class="mobile-nav md:hidden w-full mt-2">
+    <div class="flex justify-around">
+      <a href="index.html" class="flex flex-col items-center text-indigo-600">
+        <i class='bx bx-home text-xl'></i>
+        <span class="text-xs mt-1">Início</span>
+      </a>
+      <a href="#" class="flex flex-col items-center text-gray-600">
+        <i class='bx bx-calendar text-xl'></i>
+        <span class="text-xs mt-1">Calendário</span>
+      </a>
+      <button class="flex flex-col items-center text-gray-600" id="mobileThemeToggle">
+        <i class='bx bx-moon text-xl' id="mobileThemeIcon"></i>
+        <span class="text-xs mt-1">Tema</span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+  <!-- CALENDÁRIO -->
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <div class="calendar-controls">
+        <button onclick="changeMonth(-1)">
+          <i class='bx bx-chevron-left'></i> Mês Anterior
+        </button>
+      </div>
+      
+      <h1 id="month-year"></h1>
+      
+      <div class="calendar-controls">
+        <button onclick="changeMonth(1)">
+          Próximo Mês <i class='bx bx-chevron-right'></i>
+        </button>
+        <button id="themeToggleHeader" class="theme-toggle-header">
+          <i class='bx bx-moon' id="themeIconHeader"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="calendar-grid" id="weekday-headers">
+      <div class="weekday-header">Seg</div>
+      <div class="weekday-header">Ter</div>
+      <div class="weekday-header">Qua</div>
+      <div class="weekday-header">Qui</div>
+      <div class="weekday-header">Sex</div>
+      <div class="weekday-header">Sáb</div>
+      <div class="weekday-header">Dom</div>
+    </div>
+    <div class="calendar-grid" id="calendar-days"></div>
+  </div>
+
+  <!-- MODAL DE NOTAS -->
+  <div class="modal" id="note-modal">
+    <div class="modal-content">
+      <h2 class="text-xl font-bold mb-4">Adicionar/Editar Nota</h2>
+      <textarea id="note-text" placeholder="Digite sua nota aqui..." class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows="6"></textarea>
+      <div class="flex gap-2 mt-4">
+        <button onclick="saveNote()" class="flex-1 bg-indigo-500 text-white py-2 rounded-lg font-medium hover:bg-indigo-600 transition-colors">Salvar Nota</button>
+        <button onclick="closeModal()" class="flex-1 bg-gray-500 text-white py-2 rounded-lg font-medium hover:bg-gray-600 transition-colors">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE LOGIN - SEMPRE ESCURO -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-white">Login</h2>
+        <button id="closeModal" class="text-gray-400 hover:text-gray-200 bg-transparent border-none cursor-pointer">
+          <i class='bx bx-x text-2xl'></i>
+        </button>
+      </div>
+      <form id="loginForm">
+        <div class="mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-300 mb-1">Usuário</label>
+          <input type="text" id="username" class="w-full px-3 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-700 text-white" required>
+        </div>
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-medium text-gray-300 mb-1">Senha</label>
+          <input type="password" id="password" class="w-full px-3 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-700 text-white" required>
+        </div>
+        <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-300">Entrar</button>
+      </form>
+      <p class="text-center text-sm text-gray-400 mt-4">Não tem uma conta? <a href="cadastrasse/cadastrasse.html" class="text-indigo-400 hover:text-indigo-300">Cadastre-se</a></p>
+    </div>
+  </div>
+  <footer class="bg-gradient-to-r from-gray-800 to-gray-900 shadow-inner p-4 text-center text-gray-300">
+    © 2025 - FlowUp - Organizador de Tarefas Gamificado
+  </footer>
+  <script>
+    // Inicializa variáveis para data atual, mês, ano, dia selecionado, modo escuro, pontos, login e notificações
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
+    let selectedDay = null;
+    let isDarkMode = false;
+    let points = parseInt(localStorage.getItem('points')) || 0;
+    let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true' || false;
+    let username = localStorage.getItem('username') || '';
+    let notifications = JSON.parse(localStorage.getItem('notifications')) || [
+      { id: 1, message: "Bem-vindo ao Calendário Interativo!", time: "Agora", read: false },
+      { id: 2, message: "Clique em qualquer dia para adicionar uma nota", time: "2 min atrás", read: false }
+    ];
+    let notes = JSON.parse(localStorage.getItem('calendarNotes')) || {};
+
+    // Elementos do DOM
+    const themeToggleHeader = document.getElementById('themeToggleHeader');
+    const themeIconHeader = document.getElementById('themeIconHeader');
+    const monthYear = document.getElementById('month-year');
+    const calendarDays = document.getElementById('calendar-days');
+    const noteModal = document.getElementById('note-modal');
+    const noteText = document.getElementById('note-text');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginModal = document.getElementById('loginModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const pointsDisplay = document.getElementById('pointsDisplay');
+    const notificationBadge = document.getElementById('notificationCount');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationList = document.getElementById('notificationList');
+    const markAllRead = document.getElementById('markAllRead');
+    const clearAllNotifications = document.getElementById('clearAllNotifications');
+    const notificationBtn = document.getElementById('notificationBtn');
+
+    // Carrega a preferência de tema do usuário
+    function loadThemePreference() {
+      const savedTheme = localStorage.getItem('theme');
+      console.log('Tema carregado:', savedTheme); // Para debug
+      if (savedTheme === 'dark') {
+        enableDarkMode();
+      } else if (savedTheme === 'light') {
+        disableDarkMode();
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        enableDarkMode();
+      }
+    }
+
+    // Ativa o modo escuro
+    function enableDarkMode() {
+      document.body.classList.add('dark');
+      themeIconHeader.classList.remove('bx-moon');
+      themeIconHeader.classList.add('bx-sun');
+      isDarkMode = true;
+      localStorage.setItem('theme', 'dark');
+    }
+
+    // Desativa o modo escuro
+    function disableDarkMode() {
+      document.body.classList.remove('dark');
+      themeIconHeader.classList.remove('bx-sun');
+      themeIconHeader.classList.add('bx-moon');
+      isDarkMode = false;
+      localStorage.setItem('theme', 'light');
+    }
+
+    // Alterna entre modo claro e escuro
+    function toggleTheme() {
+      if (isDarkMode) {
+        disableDarkMode();
+      } else {
+        enableDarkMode();
+      }
+    }
+
+    // Renderiza o calendário
+    function renderCalendar() {
+      calendarDays.innerHTML = '';
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+      const firstDay = (firstDayOfMonth.getDay() + 6) % 7; // Ajusta para Segunda = 0, Domingo = 6
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
+      const today = new Date();
+
+      // Calcula o número total de células necessárias
+      const totalCellsNeeded = firstDay + daysInMonth;
+      const totalCells = totalCellsNeeded <= 35 ? 35 : 42; // 5 linhas (35 células) ou 6 linhas (42 células)
+      const remainingCells = totalCells - (firstDay + daysInMonth);
+
+      monthYear.textContent = `${new Date(currentYear, currentMonth).toLocaleString('pt-BR', { month: 'long' })} ${currentYear}`;
+
+      // Dias do mês anterior
+      for (let i = 0; i < firstDay; i++) {
+        const dayElement = document.createElement('div');
+        dayElement.classList.add('calendar-day', 'other-month');
+        dayElement.innerHTML = `<div class="calendar-day-header">${prevMonthDays - firstDay + i + 1}</div>`;
+        calendarDays.appendChild(dayElement);
+      }
+
+      // Dias do mês atual
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        const isToday = today.getDate() === day && 
+                       today.getMonth() === currentMonth && 
+                       today.getFullYear() === currentYear;
+        
+        if (isToday) {
+          dayElement.classList.add('calendar-day', 'today');
+        } else {
+          dayElement.classList.add('calendar-day');
+        }
+        
+        dayElement.innerHTML = `
+          <div class="calendar-day-header">${day}</div>
+          <div class="calendar-day-content">${notes[`${currentYear}-${currentMonth + 1}-${day}`] || ''}</div>
+        `;
+        dayElement.addEventListener('click', () => openModal(day));
+        calendarDays.appendChild(dayElement);
+      }
+
+      // Dias do próximo mês
+      for (let i = 1; i <= remainingCells; i++) {
+        const dayElement = document.createElement('div');
+        dayElement.classList.add('calendar-day', 'other-month');
+        dayElement.innerHTML = `<div class="calendar-day-header">${i}</div>`;
+        calendarDays.appendChild(dayElement);
+      }
+    }
+
+    // Altera o mês exibido
+    function changeMonth(offset) {
+      currentMonth += offset;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar();
+      syncData();
+    }
+
+    // Abre o modal de notas
+    function openModal(day) {
+      selectedDay = day;
+      noteText.value = notes[`${currentYear}-${currentMonth + 1}-${day}`] || '';
+      noteModal.style.display = 'flex';
+    }
+
+    // Fecha o modal de notas
+    function closeModal() {
+      noteModal.style.display = 'none';
+      selectedDay = null;
+    }
+
+    // Salva a nota no localStorage
+    function saveNote() {
+      if (selectedDay) {
+        const noteContent = noteText.value.trim();
+        notes[`${currentYear}-${currentMonth + 1}-${selectedDay}`] = noteContent;
+        localStorage.setItem('calendarNotes', JSON.stringify(notes));
+        renderCalendar();
+        closeModal();
+        addNotification(`Nota ${noteContent ? 'salva' : 'removida'} para ${selectedDay}/${currentMonth + 1}/${currentYear}`);
+        syncData();
+      }
+    }
+
+    // Realiza login do usuário
+    function login() {
+      const user = usernameInput.value.trim();
+      const pass = passwordInput.value.trim();
+      if (user && pass) {
+        isLoggedIn = true;
+        username = user;
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('username', username);
+        updateLoginButton();
+        loginModal.style.display = 'none';
+        usernameInput.value = '';
+        passwordInput.value = '';
+        addNotification(`Bem-vindo, ${username}!`);
+        syncData();
+      } else {
+        alert('Preencha todos os campos!');
+      }
+    }
+
+    // Realiza logout do usuário
+    function logout() {
+      isLoggedIn = false;
+      username = '';
+      localStorage.setItem('isLoggedIn', 'false');
+      localStorage.removeItem('username');
+      updateLoginButton();
+      addNotification('Você saiu da conta.');
+      syncData();
+    }
+
+    // Atualiza o texto do botão de login/logout
+    function updateLoginButton() {
+      if (isLoggedIn) {
+        loginBtn.textContent = 'Logout';
+        loginBtn.classList.add('logout');
+      } else {
+        loginBtn.textContent = 'Login';
+        loginBtn.classList.remove('logout');
+      }
+    }
+
+    // Fecha o modal de login
+    function closeLoginModal() {
+      loginModal.style.display = 'none';
+    }
+
+    // Atualiza a exibição de pontos
+    function updatePointsDisplay() {
+      pointsDisplay.textContent = points;
+      localStorage.setItem('points', points);
+    }
+
+    // Adiciona uma nova notificação
+    function addNotification(message) {
+      const id = Date.now();
+      const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      notifications.unshift({ id, message, time, read: false });
+      localStorage.setItem('notifications', JSON.stringify(notifications));
+      updateNotifications();
+    }
+
+    // Atualiza a lista de notificações
+    function updateNotifications() {
+      notificationList.innerHTML = '';
+      const unreadCount = notifications.filter(n => !n.read).length;
+      notificationBadge.textContent = unreadCount;
+      notificationBadge.style.display = unreadCount > 0 ? 'block' : 'none';
+
+      if (notifications.length === 0) {
+        notificationList.innerHTML = '<div class="p-4 text-center text-gray-500">Nenhuma notificação</div>';
+        return;
+      }
+
+      notifications.forEach(notif => {
+        const item = document.createElement('div');
+        item.className = `notification-item ${!notif.read ? 'unread' : ''}`;
+        item.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <p class="text-sm">${notif.message}</p>
+              <span class="notification-time">${notif.time}</span>
+            </div>
+            ${!notif.read ? '<span class="w-2 h-2 bg-red-500 rounded-full ml-2 mt-1 flex-shrink-0"></span>' : ''}
+          </div>
+        `;
+        item.addEventListener('click', () => markAsRead(notif.id));
+        notificationList.appendChild(item);
+      });
+    }
+
+    // Marca uma notificação como lida
+    function markAsRead(id) {
+      const notif = notifications.find(n => n.id === id);
+      if (notif && !notif.read) {
+        notif.read = true;
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+        updateNotifications();
+      }
+    }
+
+    // Marca todas as notificações como lidas
+    function markAllAsRead() {
+      notifications.forEach(n => n.read = true);
+      localStorage.setItem('notifications', JSON.stringify(notifications));
+      updateNotifications();
+    }
+
+    // Limpar todas as notificações
+    function clearAllNotificationsFunc() {
+      notifications = [];
+      localStorage.setItem('notifications', JSON.stringify(notifications));
+      updateNotifications();
+      notificationDropdown.style.display = 'none';
+      addNotification("Todas as notificações foram limpas.");
+    }
+
+    // Sincroniza dados com o servidor
+    function syncData() {
+      if (isLoggedIn) {
+        console.log('Sincronizando dados com o servidor...');
+        const syncData = {
+          username,
+          points,
+          notes,
+          notifications
+        };
+        localStorage.setItem('syncData', JSON.stringify(syncData));
+      }
+    }
+
+    // Listeners de eventos
+    loginBtn.addEventListener('click', () => {
+      if (isLoggedIn) {
+        logout();
+      } else {
+        loginModal.style.display = 'flex';
+      }
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      loginModal.style.display = 'none';
+    });
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      login();
+    });
+
+    notificationBtn.addEventListener('click', () => {
+      notificationDropdown.style.display = notificationDropdown.style.display === 'block' ? 'none' : 'block';
+    });
+
+    markAllRead.addEventListener('click', (e) => {
+      e.stopPropagation();
+      markAllAsRead();
+    });
+
+    clearAllNotifications.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearAllNotificationsFunc();
+    });
+
+    themeToggleHeader.addEventListener('click', toggleTheme);
+
+    // Fechar modais e dropdowns ao clicar fora
+    document.addEventListener('click', (e) => {
+      // Fechar dropdown de notificações
+      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+        notificationDropdown.style.display = 'none';
+      }
+      
+      // Fechar modais ao clicar no fundo
+      if (e.target === noteModal) {
+        closeModal();
+      }
+      if (e.target === loginModal) {
+        closeLoginModal();
+      }
+    });
+
+    // Inicialização ao carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCalendar();
+      loadThemePreference();
+      updatePointsDisplay();
+      updateNotifications();
+      updateLoginButton();
+    });
+    // Adicione após suas variáveis existentes
+const mobileThemeToggle = document.getElementById('mobileThemeToggle');
+const mobileThemeIcon = document.getElementById('mobileThemeIcon');
+
+// Event listener para o botão de tema mobile
+if (mobileThemeToggle) {
+  mobileThemeToggle.addEventListener('click', toggleTheme);
+}
+
+// Atualizar ícone do tema mobile
+function updateMobileThemeIcon() {
+  if (mobileThemeIcon) {
+    if (isDarkMode) {
+      mobileThemeIcon.classList.remove('bx-moon');
+      mobileThemeIcon.classList.add('bx-sun');
+    } else {
+      mobileThemeIcon.classList.remove('bx-sun');
+      mobileThemeIcon.classList.add('bx-moon');
+    }
+  }
+}
+
+// Modifique sua função toggleTheme para incluir:
+function toggleTheme() {
+  if (isDarkMode) {
+    disableDarkMode();
+  } else {
+    enableDarkMode();
+  }
+  updateMobileThemeIcon(); // Adicione esta linha
+}
+
+// Modifique enableDarkMode e disableDarkMode para incluir:
+function enableDarkMode() {
+  document.body.classList.add('dark');
+  themeIconHeader.classList.remove('bx-moon');
+  themeIconHeader.classList.add('bx-sun');
+  isDarkMode = true;
+  localStorage.setItem('theme', 'dark');
+  updateMobileThemeIcon(); // Adicione esta linha
+}
+
+function disableDarkMode() {
+  document.body.classList.remove('dark');
+  themeIconHeader.classList.remove('bx-sun');
+  themeIconHeader.classList.add('bx-moon');
+  isDarkMode = false;
+  localStorage.setItem('theme', 'light');
+  updateMobileThemeIcon(); // Adicione esta linha
+}
+  </script>
+</body>
+</html>
